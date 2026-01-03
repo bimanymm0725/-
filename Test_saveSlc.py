@@ -1,4 +1,3 @@
-# Test_saveSlc_fixed.py
 from SliceAlgo import *
 from StlModel import StlModel
 import os
@@ -11,7 +10,7 @@ def generate_test_slc_fixed():
     modelName = "monk"
     layerThk = 2.0
 
-    stl_path = "D:/Projects/STL/monk.stl"
+    stl_path = "./STL/monk.stl"
 
     if not os.path.exists(stl_path):
         print(f"STL文件不存在: {stl_path}")

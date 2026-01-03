@@ -70,3 +70,21 @@ class ClipperAdaptor:
         # 使用第一个多边形的z坐标
         z_coord = polys[0].point(0).z if polys[0].count() > 0 else 0
         return self.toPolys(solution, z_coord, True)
+
+
+    def clip(self, subjPolys, clipPolys, clipType, z=0, minArea=0.01):
+        """通用布尔运算函数"""
+        clipper = pyclipper.Pyclipper()
+        clipper.AddPaths(self.toPaths(subjPolys), pyclipper.PT_SUBJECT, True)
+        clipper.AddPaths(self.toPaths(clipPolys), pyclipper.PT_CLIP, True)
+
+        sln = clipper.Execute(clipType, pyclipper.PFT_EVENODD, pyclipper.PFT_EVENODD)
+        slnPolys = self.toPolys(sln, z)
+
+        # 过滤微小面积
+        resultPolys = []
+        for poly in slnPolys:
+            if math.fabs(poly.getArea()) >= minArea:
+                resultPolys.append(poly)
+
+        return resultPolys

@@ -1,0 +1,61 @@
+import os
+import vtk
+import time
+# 导入自定义模块
+from StlModel import StlModel
+from VtkAdaptor import VtkAdaptor
+
+
+def test_stl_viewer():
+    # 1. 设置文件路径 relative path
+    stl_filename = "monk.stl"
+    stl_path = os.path.join(".", "STL", stl_filename)
+
+    # 检查文件是否存在
+    if not os.path.exists(stl_path):
+        # 如果相对路径找不到，尝试绝对路径或提示用户
+        print(f"[错误] 无法找到文件: {stl_path}")
+        print("请确保在当前代码目录下创建 'STL' 文件夹并将 'monk.stl' 放入其中。")
+        return
+
+    start_time = time.time()
+
+    # 2. 使用 VTK 读取器 (用于可视化)
+    reader = vtk.vtkSTLReader()
+    reader.SetFileName(stl_path)
+    reader.Update()  # 触发读取
+
+    # 3. 使用自定义 StlModel 提取几何数据 (用于后续算法)
+    stl_model = StlModel()
+    success = stl_model.extractFromVtkStlReader(reader)
+
+    load_time = time.time() - start_time
+
+    if success:
+        # 获取模型统计信息
+        facet_count = stl_model.getFacetNumber()
+        bounds = stl_model.getBounds()  # (xMin, xMax, yMin, yMax, zMin, zMax)
+
+        print(f"模型统计信息:")
+        print(f"  - 三角面片数量: {facet_count}")
+        print(f"  - X 轴范围: {bounds[0]:.2f} ~ {bounds[1]:.2f} mm")
+        print(f"  - Y 轴范围: {bounds[2]:.2f} ~ {bounds[3]:.2f} mm")
+        print(f"  - Z 轴范围: {bounds[4]:.2f} ~ {bounds[5]:.2f} mm")
+        print(f"  - 模型高度: {bounds[5] - bounds[4]:.2f} mm")
+
+        # 4. 可视化显示
+        va = VtkAdaptor(bgClr=(0.95, 0.95, 0.95))  # 浅灰色背景
+
+        # 绘制模型，设置颜色为灰色，半透明方便观察内部
+        actor = va.drawPdSrc(reader)
+        actor.GetProperty().SetColor(0.7, 0.7, 0.7)
+        actor.GetProperty().SetOpacity(1.0)
+
+        va.display()
+
+    else:
+        print("[失败] 无法解析 STL 模型数据。")
+
+
+if __name__ == '__main__':
+    test_stl_viewer()

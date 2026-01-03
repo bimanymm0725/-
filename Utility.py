@@ -1,3 +1,5 @@
+import math
+
 def makeListLinear(lists):
     """将多维列表转化为一维列表"""
     outList = []
@@ -11,3 +13,12 @@ def _makeListLinear(inList, outList):
             outList.append(a)
         else:
             _makeListLinear(a, outList)
+
+
+def degToRad(deg):
+    """角度转弧度"""
+    return deg * math.pi / 180.0
+
+def radToDeg(rad):
+    """弧度转角度"""
+    return rad * 180.0 / math.pi

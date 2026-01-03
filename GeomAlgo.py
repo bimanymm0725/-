@@ -371,32 +371,26 @@ def adjustPolygonDirs(polygons):
         else:
             polygons[i].makeCW()  # 调整多边形方向为顺时针
 
+
 def rotatePolygons(polygons, angle, center=None):
-    """旋转多边形集合"""
-    if center is None:
-        total_points = 0
-        center_x, center_y, center_z = 0, 0, 0
+    """旋转多边形集合，返回新的多边形列表（不修改原对象）"""
+    if not polygons:
+        return []
 
-        for polygon in polygons:
-            for i in range(polygon.count()):
-                pt = polygon.point(i)
-                center_x += pt.x
-                center_y += pt.y
-                center_z += pt.z
-                total_points += 1
+    # 确定旋转中心
+    dx = 0 if center is None else center.x
+    dy = 0 if center is None else center.y
 
-        if total_points > 0:
-            center = Point3D(center_x / total_points, center_y / total_points, center_z / total_points)
-        else:
-            center = Point3D(0, 0, 0)
+    # 构造变换矩阵：平移到原点 -> 旋转 -> 平移回原处
+    mt = Matrix3D.createTranslateMatrix(-dx, -dy, 0)
+    mr = Matrix3D.createRotateMatrix(Vector3D(0, 0, 1), angle)
+    mb = Matrix3D.createTranslateMatrix(dx, dy, 0)
 
-    axis = Vector3D(0, 0, 1)
-    rotate_matrix = Matrix3D.createRotateMatrix(axis, angle)
+    m = mt * mr * mb
 
-    translate_to_origin = Matrix3D.createTranslateMatrix(-center.x, -center.y, -center.z)
-    translate_back = Matrix3D.createTranslateMatrix(center.x, center.y, center.z)
+    newPolys = []
+    for poly in polygons:
+        # 使用 multiplied 生成新对象，而不是 multiply
+        newPolys.append(poly.multiplied(m))
 
-    transform = translate_back * rotate_matrix * translate_to_origin
-
-    for polygon in polygons:
-        polygon.multiply(transform)
+    return newPolys

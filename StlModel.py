@@ -324,31 +324,30 @@ class StlModel:
                 not math.isnan(point.z) and not math.isinf(point.z))
 
     def extractFromVtkStlReader(self, vtkStlReader):
-        """从vtkSTLReader提取面片信息"""
+        """从VTK Reader提取数据 """
         try:
+            vtkStlReader.Update()
+
             poly_data = vtkStlReader.GetOutput()
+            if poly_data is None:
+                print("Error: VTK Output is None")
+                return False
 
-            # 获取点数据
             points = poly_data.GetPoints()
-            num_points = points.GetNumberOfPoints()
+            if points is None:
+                print("Error: VTK Points is None (可能是空文件或路径错误)")
+                return False
 
-            # 获取三角形面片
             polys = poly_data.GetPolys()
             polys.InitTraversal()
-
-            # 清空现有面片
             self.triangles = []
-
-            # 遍历所有三角形
             id_list = vtk.vtkIdList()
+
             while polys.GetNextCell(id_list):
                 if id_list.GetNumberOfIds() == 3:
-                    # 获取三个顶点的坐标
                     pt0 = points.GetPoint(id_list.GetId(0))
                     pt1 = points.GetPoint(id_list.GetId(1))
                     pt2 = points.GetPoint(id_list.GetId(2))
-
-                    # 创建Point3D对象
                     A = Point3D(pt0[0], pt0[1], pt0[2])
                     B = Point3D(pt1[0], pt1[1], pt1[2])
                     C = Point3D(pt2[0], pt2[1], pt2[2])
@@ -356,20 +355,47 @@ class StlModel:
                     # 计算法向量
                     AB = A.pointTo(B)
                     AC = A.pointTo(C)
-                    normal = AB.crossProduct(AC).normalized()
+                    # 处理共线三角形导致的零向量问题
+                    cross = AB.crossProduct(AC)
+                    if cross.length() > 1e-6:
+                        normal = cross.normalized()
+                    else:
+                        normal = Vector3D(0, 0, 1)
 
-                    # 创建三角形并添加到列表
-                    triangle = Triangle(A, B, C, normal)
-                    self.triangles.append(triangle)
+                    self.triangles.append(Triangle(A, B, C, normal))
 
-            # 计算边界
             self._calculateBounds()
             return True
-
         except Exception as e:
-            print(f"从VTK提取数据时出错: {e}")
+            print(f"从VTK提取数据出错: {e}")
+            import traceback
+            traceback.print_exc()
             return False
 
     def getBounds(self):
         """获取模型6个方向边界极值"""
         return self.xMin, self.xMax, self.yMin, self.yMax, self.zMin, self.zMax
+
+    def multiplied(self, m):
+        """根据矩阵进行几何变换"""
+        model = StlModel()
+        for t in self.triangles:
+            # 变换三角形顶点和法向量
+            newA = t.A.multiplied(m)
+            newB = t.B.multiplied(m)
+            newC = t.C.multiplied(m)
+            newN = t.N.multiplied(m)
+            triangle = Triangle(newA, newB, newC, newN)
+            model.triangles.append(triangle)
+
+        model._calculateBounds()
+        return model
+
+    def rotated(self, a, b, c):
+        """指定角度对模型旋转变换 (a,b,c 分别为绕 X,Y,Z 轴的弧度)"""
+        mx = Matrix3D.createRotateMatrix(Vector3D(1, 0, 0), a)
+        my = Matrix3D.createRotateMatrix(Vector3D(0, 1, 0), b)
+        mz = Matrix3D.createRotateMatrix(Vector3D(0, 0, 1), c)
+
+        m = mx * my * mz
+        return self.multiplied(m)

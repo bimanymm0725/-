@@ -6,7 +6,7 @@ from StlModel import *
 
 def comprehensive_test():
     """全面测试所有STL文件"""
-    stl_folder = "D:/Projects/STL"
+    stl_folder = "./STL"
 
     # 获取所有STL文件
     stl_files = []
@@ -138,7 +138,7 @@ def comprehensive_test():
 
 def performance_analysis():
     """性能分析：比较不同算法在不同规模模型上的表现"""
-    stl_folder = "D:/Projects/STL"
+    stl_folder = "./STL"
 
     # 选择代表性的测试文件
     test_files = [
