@@ -81,7 +81,7 @@ def comprehensive_test():
                     layer_result['match_layers'] = actual_layers2
 
                     # 暴力法（只对小文件运行）
-                    run_brutal = (facet_count <= 100 and file_size < 100)
+                    run_brutal = (facet_count <= 1000000 and file_size < 1000000)
                     if run_brutal:
                         start = time.time()
                         layers3 = intersectStl_brutal(stlModel, layerThk)

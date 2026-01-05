@@ -20,7 +20,7 @@ class GenCpPath:
         self.linkLocalOffsets()
 
     def offset(self):
-        """连续偏置路径生成函数 (增加面积过滤)"""
+        """连续偏置路径生成函数 """
         ca = ClipperAdaptor()
         ca.arcTolerance = self.arcTolerance
 
@@ -51,7 +51,7 @@ class GenCpPath:
             self.offsetPolyses.append(valid_polys)
 
     def linkToParent(self, child):
-        """将子曲线连接到父曲线上 (增加孤岛检测)"""
+        """将子曲线连接到父曲线上 """
         parent = child.parent
         if not parent: return child
 
@@ -62,7 +62,6 @@ class GenCpPath:
             if d < dMin:
                 dMin, iAtdMin = d, i
 
-        # 【核心修复】如果最近距离超过 3倍 路径间距，视为独立岛屿，不连接
         if math.sqrt(dMin) > self.interval * 3.0:
             return None
 

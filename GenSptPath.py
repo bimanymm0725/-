@@ -44,7 +44,7 @@ def genSptPath(stlModel, layers, pathInvl, gridSize, crAngle, fillType, fillAngl
             angle = fillAngle + math.pi / 2
 
         # 生成路径
-        # 注意：这里传入的 ys 是全局统一的，保证了上下层路径对齐
+        # 这里传入的 ys 是全局统一的，保证了上下层路径对齐
         layer.sptDpPaths = genDpPathEx(layer.sptContours, pathInvl, angle, ys, center)
         layer.sptCpPaths = layer.sptContours
 

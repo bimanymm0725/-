@@ -3,13 +3,10 @@ import sys
 import math
 import vtk
 
-# ==============================================================================
-# 区域 1: 基础环境与热修复
-# ==============================================================================
+
 try:
     import GeomAlgo
     from Segment import Segment
-    # 只导入类，不依赖外部的函数定义
     from GenCpPath import GenCpPath
     from ClipperAdaptor import ClipperAdaptor
     from PolyPerSeeker import seekPolyPer
@@ -37,8 +34,6 @@ except ImportError as e:
         print(f"环境错误: 缺少必要文件 ({e2})")
         sys.exit(1)
 
-
-# --- 修复 1: 修复 GeomAlgo.pointInPolygon ---
 def fixed_pointInPolygon(p, polygon):
     n = polygon.count()
     for i in range(n):
@@ -69,12 +64,6 @@ try:
 except:
     pass
 
-
-# ==============================================================================
-# 区域 2: 注入优化逻辑
-# ==============================================================================
-
-# 定义新的 offset 函数：增加面积过滤
 def patched_offset(self):
     ca = ClipperAdaptor()
     ca.arcTolerance = self.arcTolerance
@@ -100,8 +89,6 @@ def patched_offset(self):
 
         self.offsetPolyses.append(valid_polys)
 
-
-# 定义新的 linkToParent 函数：增加距离检测
 def patched_linkToParent(self, child):
     parent = child.parent
     if not parent: return child
@@ -113,8 +100,6 @@ def patched_linkToParent(self, child):
         if d < dMin:
             dMin, iAtdMin = d, i
 
-    # 【核心修复】如果内外圈距离超过 3 倍间距，视为独立岛屿，不连接
-    # 这就是消除 PPT 中那种“乱连线”的关键
     if math.sqrt(dMin) > self.interval * 3.0:
         return None
 
@@ -126,8 +111,6 @@ def patched_linkToParent(self, child):
     for i in range(iAtdMin, parent.count()): newPoly.addPoint(parent.point(i).clone())
     return newPoly
 
-
-# 定义新的 linkLocalOffsets 函数
 def patched_linkLocalOffsets(self):
     if not self.offsetPolyses: return
     try:
@@ -156,27 +139,17 @@ def patched_linkLocalOffsets(self):
     self.offsetPolyses.clear()
 
 
-# === 应用补丁 ===
-print("[系统] 正在注入智能优化算法 (去噪 + 孤岛识别)...")
 GenCpPath.offset = patched_offset
 GenCpPath.linkToParent = patched_linkToParent
 GenCpPath.linkLocalOffsets = patched_linkLocalOffsets
 
 
-# ==============================================================================
-# 区域 3: 本地接口函数 (解决 NameError 的关键)
-# ==============================================================================
 def local_genCpPath(boundaries, interval, shellThk):
     """
     本地定义的接口函数，确保调用的是打过补丁的 GenCpPath 类。
     """
     generator = GenCpPath(boundaries, interval, shellThk)
     return generator.paths
-
-
-# ==============================================================================
-# 区域 4: 主逻辑
-# ==============================================================================
 
 def find_data_file(stl_dir, model_name, layer_thk):
     slc_name = f"{model_name}_at_{layer_thk}mm.slc"
@@ -187,11 +160,10 @@ def find_data_file(stl_dir, model_name, layer_thk):
 
 def show_clean_contours():
     print("=" * 60)
-    print(" 轮廓平行路径生成 (PPT效果复现版)")
+    print(" 轮廓平行路径生成")
     print("=" * 60)
 
     STL_DIR = "./STL"
-    # 使用 1.0mm 切片观察
     SLC_PATH = find_data_file(STL_DIR, "monk", 1.0)
 
     if not SLC_PATH:
@@ -202,20 +174,17 @@ def show_clean_contours():
     print(f"[1] 读取: {SLC_PATH}")
     layers = readSlcFile(SLC_PATH)
 
-    # 选取第 48 层 (对应Z约-76.6mm)
     target_idx = min(len(layers) - 1, 48)
     layer = layers[target_idx]
 
     print(f"[2] 处理第 {target_idx} 层 (Z={layer.z:.1f}mm)")
 
-    # 参数设置：为了让线条明显，间距设为 0.6mm，壁厚设大以便填满
     INTERVAL = 0.6
     SHELL_THK = 10.0
 
     print(f"[3] 生成路径 (间距:{INTERVAL}mm)...")
 
     if layer.contours:
-        # === 关键：调用本地定义的函数 ===
         paths = local_genCpPath(layer.contours, INTERVAL, SHELL_THK)
         print(f"    - 生成路径数: {len(paths)}")
     else:
@@ -242,12 +211,11 @@ def show_clean_contours():
         act.GetProperty().SetColor(1, 0, 0)
         act.GetProperty().SetLineWidth(1.5)
 
-    # 3. 相机设置 (顶视 + 平行投影)
+    # 3. 相机设置
     cam = va.renderer.GetActiveCamera()
     cam.ParallelProjectionOn()
-    cam.SetParallelScale(65)  # 调整视野大小
+    cam.SetParallelScale(65)
     va.renderer.ResetCamera()
-    # 稍微调整一下初始视角，保证看全
     va.renderer.GetActiveCamera().Zoom(1.1)
 
     print("\n窗口已打开。")

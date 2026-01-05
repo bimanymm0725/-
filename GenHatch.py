@@ -15,7 +15,7 @@ class SweepLine:
     def intersect(self, y):
         ips = []
 
-        # 【修复】获取当前层的正确 Z 高度
+        # 获取当前层的正确 Z 高度
         current_z = 0.0
         if len(self.segs) > 0:
             current_z = self.segs[0].A.z
@@ -80,7 +80,7 @@ def calcHatchPoints(polygons, ys):
         for i in range(k, len(segs)):
             seg = segs[i]
             # yMin < y <= yMax (半开区间，防止顶点重复计算)
-            if seg.yMin < y - epsilon and seg.yMax >= y - epsilon:
+            if seg.yMin < y - epsilon <= seg.yMax:
                 sweep.segs.append(seg)
             elif seg.yMin >= y - epsilon:
                 k = i
@@ -104,9 +104,7 @@ def genHatches(polygons, ys):
     return segs
 
 
-# ... [genSweepHatches 和 genClipHatches 保持不变] ...
 def genSweepHatches(polygons, interval, angle):
-    # (原有代码保持不变)
     mt = Matrix3D.createRotateMatrix(Vector3D(0, 0, 1), -angle)
     mb = Matrix3D.createRotateMatrix(Vector3D(0, 0, 1), angle)
     rotPolys = [p.multiplied(mt) for p in polygons]
@@ -130,7 +128,6 @@ def genSweepHatches(polygons, interval, angle):
 
 
 def genClipHatches(polygons, interval, angle):
-    # (原有代码保持不变)
     if not polygons: return []
     xMin, xMax = float('inf'), float('-inf')
     yMin, yMax = float('inf'), float('-inf')

@@ -73,9 +73,6 @@ class LinkSegs_dlook:
 
         debug_mode = len(point_dict) < 100
 
-        if debug_mode:
-            print(f"点字典大小: {len(point_dict)}")
-
         while True:
             # 寻找未使用的点
             start_point = self.findUnusedPoint(point_dict)
@@ -84,10 +81,6 @@ class LinkSegs_dlook:
 
             poly = Polyline()
             current = start_point
-
-            if debug_mode:
-                print(f"开始新轮廓，起始点: ({current.x}, {current.y}, {current.z})")
-
             iteration_count = 0
             max_iterations = len(point_dict) * 2
 
@@ -109,15 +102,11 @@ class LinkSegs_dlook:
                     # 检查当前线段的另一端是否可以闭合轮廓
                     if poly.count() > 2 and current.other.isCoincident(start_point):
                         poly.addPoint(start_point.toPoint3D())
-                        if debug_mode:
-                            print(f"通过other_end闭合轮廓，总点数: {poly.count()}")
                     break
 
                 # 检查是否回到起点
                 if next_point.isCoincident(start_point):
                     poly.addPoint(start_point.toPoint3D())
-                    if debug_mode:
-                        print(f"轮廓闭合，总点数: {poly.count()}")
                     break
 
                 current = next_point

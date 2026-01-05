@@ -4,8 +4,6 @@ import os
 
 
 def generate_test_slc_fixed():
-    """修复版本的SLC文件生成"""
-
     # 配置参数
     modelName = "monk"
     layerThk = 2.0

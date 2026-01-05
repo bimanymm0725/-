@@ -10,7 +10,7 @@ def fitness(stlModel, a, b, gridSize, crAngle):
     # 1. 旋转模型
     newModel = stlModel.rotated(a, b, 0)
 
-    # 2. 计算模型支撑点 (不需要layers参数)
+    # 2. 计算模型支撑点
     fsr = FindSptRegion(newModel, None, gridSize, crAngle)
     gridDic = fsr.calcModelSptPoints()
 
@@ -115,7 +115,7 @@ if __name__ == '__main__':
     import time
 
     # 1. 设置模型路径
-    stl_path = ".\\STL\\cube.stl"
+    stl_path = ".\\STL\\man head.stl"
 
     print(f"读取模型: {stl_path}")
     src = vtk.vtkSTLReader()

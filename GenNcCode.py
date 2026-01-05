@@ -94,7 +94,6 @@ def postProcess(layers, pp):
     code = pp.startCode
     e = 0.0
 
-    # 【核心修正】E值计算公式
     # 打印线条体积 = 长度 * 线宽(喷嘴直径) * 层高
     # 耗材体积 = 长度 * pi * (耗材直径/2)^2
     # E_per_mm = (nozzle * layer_height) / (pi * (filament/2)^2)

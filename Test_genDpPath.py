@@ -25,7 +25,7 @@ class InteractiveViewer:
         self.view_mode = "ALL"  # "ALL" (全貌) 或 "SINGLE" (单层)
 
         # 存储 Actor 以便快速切换显隐
-        self.actors = []  # 结构: [{'contours': [actors], 'paths': [actors]}, ...]
+        self.actors = []
 
         print("\n正在构建 3D 场景，请稍候...")
         self._build_actors()
@@ -36,8 +36,8 @@ class InteractiveViewer:
         print("\n" + "=" * 60)
         print("【 交互操作指南 】")
         print(f"  当前层厚文件包含 {self.total_layers} 层")
-        print("  [S] 键 : 切换到【单层模式】查看具体线路 (推荐)")
-        print("  [A] 键 : 切换到【全貌模式】 (PPT风格)")
+        print("  [S] 键 : 切换到【单层模式】查看具体线路")
+        print("  [A] 键 : 切换到【全貌模式】")
         print("  [↑] 键 : 上一层")
         print("  [↓] 键 : 下一层")
         print("  [Q] 键 : 退出程序")
@@ -135,14 +135,13 @@ class InteractiveViewer:
 
 
 def run_test():
-    # === 1. 性能统计 (保留原功能) ===
     base_dir = "./STL"
     files = ["monk_at_2.0mm.slc", "monk_at_1.0mm.slc", "monk_at_0.5mm.slc", "monk_at_0.2mm.slc"]
 
     interval = 1.5  # 间距
     base_angle = 0  # 初始角度
 
-    vis_data = {}  # 存储用于可视化的数据 (只存2.0mm的，为了流畅)
+    vis_data = {}  # 存储用于可视化的数据
 
     print(f"{'=' * 65}")
     print(f"平行路径生成性能统计 (间距: {interval}mm)")
@@ -177,12 +176,10 @@ def run_test():
         t_end = time.time()
         print(f"{fname:<20} | {len(layers):<6} | {t_end - t_start:<10.4f} | {count}")
 
-        # 缓存 2.0mm 的数据用于展示
         if "2.0mm" in fname:
             vis_data['layers'] = layers
             vis_data['pathses'] = pathses
 
-    # === 2. 交互可视化 ===
     if 'layers' in vis_data:
         InteractiveViewer(vis_data['layers'], vis_data['pathses'], interval)
     else:

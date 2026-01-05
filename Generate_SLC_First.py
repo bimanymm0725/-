@@ -10,7 +10,6 @@ def generate_multiple_slc():
     """
     读取monk.stl并生成不同层厚的SLC文件
     层厚: 0.2mm, 0.5mm, 1.0mm, 2.0mm
-    优化: 使用 linkSegs_dlook 替代 linkSegs_brutal
     """
 
     # 配置路径
@@ -63,10 +62,6 @@ def generate_multiple_slc():
 
         for layer in layers:
             if layer.segments:
-                # =================================================
-                # 修改处：使用 linkSegs_dlook (字典查询法)
-                # 速度比 linkSegs_brutal 快几个数量级
-                # =================================================
                 layer.contours = linkSegs_dlook(layer.segments)
                 contour_count += len(layer.contours)
 

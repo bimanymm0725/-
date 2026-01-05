@@ -13,7 +13,6 @@ def stl_to_vtk_actor(stl_model):
     cells = vtk.vtkCellArray()
 
     # 遍历所有三角形，构建 VTK 数据
-    # 虽然 Python 循环慢一点，但保证绝对正确
     for tri in stl_model.triangles:
         # 插入三个顶点
         id1 = points.InsertNextPoint(tri.A.x, tri.A.y, tri.A.z)
@@ -51,12 +50,11 @@ def show_perfect_match():
     stlModel = StlModel()
     stlModel.extractFromVtkStlReader(src)
 
-    # 2. 应用最优旋转角度 (PSO结果)
+    # 2. 应用最优旋转角度
     best_x = 85.14
-    best_y = 346.46
+    best_y = 0
     print(f"应用最优角度: X={best_x}, Y={best_y}")
 
-    # === 关键步骤 ===
     # 在内存中生成旋转后的模型对象 optModel
     # 所有的计算（切片、支撑）都将基于这个对象
     optModel = stlModel.rotated(degToRad(best_x), degToRad(best_y), 0)
@@ -74,9 +72,6 @@ def show_perfect_match():
     va = VtkAdaptor()
     va.setBackgroundColor(1, 1, 1)  # 白色背景
 
-    # --- 核心修复：直接绘制 optModel ---
-    # 我们不画原始的 src，而是把内存里算好的 optModel 转成 Actor 画出来
-    # 这样灰色模型和蓝色线绝对不会错位
     print("转换模型用于显示...")
     actor_opt = stl_to_vtk_actor(optModel)
     actor_opt.GetProperty().SetColor(0.7, 0.7, 0.7)  # 灰色
@@ -97,10 +92,8 @@ def show_perfect_match():
                 act.GetProperty().SetColor(0, 0, 1)
                 act.GetProperty().SetLineWidth(2)
 
-    # 自动重置相机，确保把“甩远了”的模型拉回视野中心
     va.renderer.ResetCamera()
 
-    print("窗口已打开。现在模型和支撑应该完美重合了。")
     va.display()
 
 
